@@ -6,7 +6,7 @@ dotenv.config();
 const connectDB = async () => {
   try {
     await connect(process.env.MONGODB_URI);
-    console.log("Conectado correctamente a DB_Tutor_Friend");
+    console.log("Conectado correctamente a BDD_Tutor_friend");
   } catch (error) {
     console.log("Error al conectar la BD", error);
     throw new Error("¡No se ha podido conectar a la base de datos!");
