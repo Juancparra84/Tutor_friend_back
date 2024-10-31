@@ -21,8 +21,9 @@ app.use(cors({
   optionsSuccessStatus: 204
 }));
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Configurar análisis del cuerpo de las solicitudes en formato JSON
+app.use(bodyParser.json()); // Middleware para analizar JSON en el cuerpo de las solicitudes
+app.use(bodyParser.urlencoded({ extended: true })); // Middleware para analizar datos en formato URL-encoded
 
 // Rutas
 app.use("/api/user", userRoutes);

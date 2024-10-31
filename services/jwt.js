@@ -12,7 +12,7 @@ const createToken = (user) => {
         userId: user._id,
         role: user.role,
         iat: moment().unix(), // fecha de emisión
-        exp: moment().add(1, "days").unix(), // fecha de expiración
+        exp: moment().add(2, "days").unix(), // fecha de expiración
     };
 
     // Codificar y devolver el token JWT
