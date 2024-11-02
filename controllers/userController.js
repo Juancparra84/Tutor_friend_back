@@ -1,9 +1,9 @@
 import User from "../models/user.js";
-//import Follow from '../models/follows.js';
-//import Publication from '../models/publications.js';
+import Contact from '../models/contact.js';
+//import Content
 import bcrypt from "bcrypt";
 import { createToken } from '../services/jwt.js';
-//import { followThisUser, followUserIds } from '../services/followServices.js';
+import { followThisUser, followUserIds } from '../services/followServices.js';
 
 // Método de prueba del controlador user
 export const testUser = (req, res) => {
@@ -110,7 +110,7 @@ export const login = async (req, res) => {
       });
     }
 
-   const token = createToken(userBD);  // Generar token de autenticación (JWT)
+    const token = createToken(userBD);  // Generar token de autenticación (JWT)
 
     // Devolver respuesta de login exitoso
     return res.status(200).json({
@@ -165,15 +165,16 @@ export const profile = async (req, res) => {
       });
     }
 
-    // Información de seguimiento: id del usuario identificado (req.user.userId) y el id del usuario del perfil que queremos consultar (userId = req.params.id)
-    //const followInfo = await followThisUser(req.user.userId, userId);
+    const followInfo = await followThisUser(req.user.userId, userId); // Información de seguimiento
 
     // Devolver la información del perfil del usuario solicitado
     return res.status(200).json({
       status: "success",
       user: userProfile,
-     // followInfo,
+      followInfo,
     });
+
+    //Error
   } catch (error) {
     console.log("Error al obtener el perfil del usuario: ", error);
     return res.status(500).send({
@@ -208,8 +209,7 @@ export const listUsers = async (req, res) => {
       });
     }
 
-    // Listar los seguidores del  usuario.
-    //let followUsers = await followUserIds(req);
+    let contacts = await followUserIds(req); // Listar los seguidores del  usuario.
 
     // Devolver los usuarios paginados
     return res.status(200).json({
@@ -218,8 +218,8 @@ export const listUsers = async (req, res) => {
       totalDocs: users.totalDocs,
       totalPages: users.totalPages,
       CurrentPage: users.page,
-    // users_following: followUsers.following,
-    // user_follow_me: followUsers.followers,
+      users_contacting: contacts.contacting,
+      user_contact_me: contacts.contact_me,
     });
 
     //Error
@@ -384,16 +384,14 @@ export const avatar = async (req, res) => {
 // Método para mostrar contador de seguidores y publicaciones
 export const counters = async (req, res) => {
   try {
-    // Obtener el Id del usuario autenticado (token)
-    let userId = req.user.userId;
+    let userId = req.user.userId; // Obtener el Id del usuario autenticado (token)
 
     // Si llega el id a través de los parámetros en la URL tiene prioridad
     if (req.params.id) {
       userId = req.params.id;
     }
 
-    // Obtener el nombre y apellido del usuario
-    const user = await User.findById(userId, { name: 1, last_name: 1 });
+    const user = await User.findById(userId, { name: 1, last_name: 1 });  // Obtener el nombre y apellido del usuario
 
     // Vericar el user
     if (!user) {
@@ -404,17 +402,17 @@ export const counters = async (req, res) => {
     }
 
     // Contador de usuarios que yo sigo (o que sigue el usuario autenticado)
-    const followingCount = await Follow.countDocuments({
-      following_user: userId,
+    const followingCount = await Contact.countDocuments({
+      follower_id: userId,
     });
 
     // Contador de usuarios que me siguen a mi (que siguen al usuario autenticado)
-    const followedCount = await Follow.countDocuments({
-      followed_user: userId,
+    const followedCount = await Contact.countDocuments({
+      followed_id: userId,
     });
 
     // Contador de publicaciones del usuario autenticado
-    const publicationsCount = await Publication.countDocuments({
+    const publicationsCount = await Contact.countDocuments({
       user_id: userId,
     });
 
@@ -424,11 +422,11 @@ export const counters = async (req, res) => {
       userId,
       name: user.name,
       last_name: user.last_name,
-      followingCount: followingCount,
-      followedCount: followedCount,
+      contacting: followingCount,
+      contact_me: followedCount,
       publicationsCount: publicationsCount,
     });
-  
+
     //Error
   } catch (error) {
     console.log("Error en los contadores", error);
