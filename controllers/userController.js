@@ -1,6 +1,6 @@
 import User from "../models/user.js";
 import Contact from '../models/contact.js';
-//import Content
+import Content from'../models/content.js';
 import bcrypt from "bcrypt";
 import { createToken } from '../services/jwt.js';
 import { followThisUser, followUserIds } from '../services/followServices.js';
@@ -412,8 +412,8 @@ export const counters = async (req, res) => {
     });
 
     // Contador de publicaciones del usuario autenticado
-    const publicationsCount = await Contact.countDocuments({
-      user_id: userId,
+    const contentsCount = await Content.countDocuments({
+      user: userId,
     });
 
     // Devolver los contadores
@@ -424,7 +424,7 @@ export const counters = async (req, res) => {
       last_name: user.last_name,
       contacting: followingCount,
       contact_me: followedCount,
-      publicationsCount: publicationsCount,
+     contentsCount: contentsCount,
     });
 
     //Error
