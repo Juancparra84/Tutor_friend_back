@@ -13,11 +13,11 @@ const ContentSchema = new Schema({
   },
   file: {
     type: String,
-    default: null  // Campo opcional para un archivo relacionado con la publicación
+    default: null
   },
   created_at: {
     type: Date,
-    default: Date.now  // Fecha de creación de la publicación
+    default: Date.now
   }
 });
 
