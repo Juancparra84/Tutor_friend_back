@@ -58,7 +58,7 @@ export const showContent = async (req, res) => {
     const contentId = req.params.id;
 
     // Buscar la publicación en la BD por ID
-    const contentStored = await Content.findById(contentId).populate('user', 'name last_name nick image');
+    const contentStored = await Content.findById(contentId).populate('user', 'name last_name');
 
     // Verificar si existe la publicación en la BD
     if (!contentStored) {
