@@ -5,21 +5,21 @@ const ContactSchema = new Schema({
   follower_id: {
     type: Schema.ObjectId,
     ref: "User",
-    required: true
+    required: true,
   },
   followed_id: {
     type: Schema.ObjectId,
     ref: "User",
-    required: true
+    required: true,
   },
   schedule_at: {
     type: Date,
-    default: null  // Campo opcional para sesiones de tutoría agendadas
+    default: null, // Campo opcional para sesiones de tutoría agendadas
   },
   created_at: {
     type: Date,
-    default: Date.now  // Fecha de creación del contacto
-  }
+    default: Date.now, // Fecha de creación del contacto
+  },
 });
 
 // Definir un índice único para evitar múltiples relaciones de seguimiento duplicadas

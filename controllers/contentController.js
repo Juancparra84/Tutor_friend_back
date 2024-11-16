@@ -1,85 +1,89 @@
 import Content from '../models/content.js';
 import { followUserIds } from '../services/followServices.js';
 
-// Método de prueba del controlador publication
+// Método de prueba del controlador Content
 export const testContent = (req, res) => {
   return res.status(200).send({
     message: "Mensaje enviado desde el controlador de Contenido"
   });
 };
 
-// Método para hacer (guardar en la BD) una publicación
+// Método para Crear (guardar en la BD) un contenido
 export const saveContent = async (req, res) => {
   try {
-    const params = req.body; // Obtenemos los datos del body
+    // Obtenemos los datos del body
+    const params = req.body;
 
     // Verificar que llegue desde el body el parámetro text con su información
-    if (!params.text) {
+    if(!params.text){
       return res.status(400).send({
         status: "error",
         message: "Debes enviar el texto de la publicación"
       });
     }
 
-    let newContent = new Content(params); // Crear el objeto del modelo
-    newContent.user = req.user.userId;  // Agregar al objeto de la publicación la información del usuario autenticado
+    // Crear el objeto del modelo
+    let newContent = new Content(params);
 
-    const contentStored = await newContent.save();  // Guardar la nueva publicación en la BD
+    // Agregar al objeto de la publicación la información del usuario autenticado quien crea el contenido
+    newContent.user = req.user.userId;
 
-    // Verificar que se guardó la nueva publicación en la BD (si existe publicationStored)
-    if (!contentStored) {
+    // Guardar el nuevo contenido en la BD
+    const contentStored = await newContent.save();
+
+    // Verificar que se guardó la nueva publicación en la BD (si existe contentStored)
+    if(!contentStored){
       return res.status(500).send({
         status: "error",
-        message: "No se ha guardado la publicación"
+        message: "No se ha guardado el contenido"
       });
     }
 
     // Devolver respuesta exitosa
     return res.status(200).json({
       status: "success",
-      message: "¡Publicación creada con éxito!",
+      message: "¡Contenido creado con éxito!",
       contentStored
     });
 
-    //Error
   } catch (error) {
-    console.log(`Error al crear la publicación: ${error}`);
+    console.log(`Error al crear el contenido: ${ error }`);
     return res.status(500).send({
       status: "error",
-      message: "Error al crear la publicación"
+      message: "Error al crear el contenido"
     });
   }
 };
 
-// Método para mostrar la publicación
+// Método para mostrar el contenido
 export const showContent = async (req, res) => {
   try {
-    // Obtener el ID de la publicación desde la url (parámetros)
+    // Obtener el ID del contenido desde la url (parámetros)
     const contentId = req.params.id;
 
-    // Buscar la publicación en la BD por ID
-    const contentStored = await Content.findById(contentId).populate('user', 'name last_name');
+    // Buscar el contenido en la BD por ID
+    const contentStored = await Content.findById(contentId).populate('user', 'name last_name nick image');
 
-    // Verificar si existe la publicación en la BD
-    if (!contentStored) {
+    // Verificar si existe el contenido en la BD
+    if(!contentStored){
       return res.status(404).send({
         status: "error",
-        message: "No existe la publicación"
+        message: "No existe el contenido"
       });
     }
 
     // Devolvemos respuesta exitosa
     return res.status(200).json({
       status: "success",
-      message: "Publicación encontrada",
+      message: "Contenido encontrado",
       content: contentStored
     });
 
   } catch (error) {
-    console.log(`Error al mostrar la publicación: ${error}`);
+    console.log(`Error al mostrar el contenido: ${ error }`);
     return res.status(500).send({
       status: "error",
-      message: "Error al mostrar la publicación"
+      message: "Error al mostrar el contenido"
     });
   }
 };
@@ -87,43 +91,47 @@ export const showContent = async (req, res) => {
 // Método para eliminar una publicación
 export const deleteContent = async (req, res) => {
   try {
-    // Obtener el ID de la publicación desde la url (parámetros)
+    // Obtener el ID deel contenido desde la url (parámetros)
     const contentId = req.params.id;
 
-    // Buscar la publicación en la BD y la eliminamos
-    const contentDeleted = await Content.findOneAndDelete({ user: req.user.userId, _id: contentId }).populate('user', 'name last_name');
+    // Buscar el contenido en la BD y la eliminamos
+    const contentDeleted = await Content.findOneAndDelete({ user: req.user.userId, _id: contentId}).populate('user', 'name last_name');
 
-    // Verificar si existe la publicación en la BD y si se eliminó de la BD
-    if (!contentDeleted) {
+    // Verificar si existe el contenido en la BD y si se eliminó de la BD
+    if(!contentDeleted){
       return res.status(404).send({
         status: "error",
-        message: "No se ha encontrado o no tienes permiso para eliminar esta publicación"
+        message: "No se ha encontrado o no tienes permiso para eliminar este contenido"
       });
     }
 
     // Devolvemos respuesta exitosa
     return res.status(200).json({
       status: "success",
-      message: "Publicación eliminada con éxito",
+      message: "Contenido eliminada con éxito",
       content: contentDeleted
     });
 
-    //Error
   } catch (error) {
-    console.log(`Error al eliminar la publicación: ${error}`);
+    console.log(`Error al eliminar el contenido: ${ error }`);
     return res.status(500).send({
       status: "error",
-      message: "Error al eliminar la publicación"
+      message: "Error al eliminar el contenido"
     });
   }
 };
 
-// Método para listar publicaciones del usuario
+// Método para listar el contenido del usuario
 export const contentsUser = async (req, res) => {
   try {
-    const userId = req.params.id; // Obtener el ID del usuario
-    let page = req.params.page ? parseInt(req.params.page, 10) : 1; // Asignar el número de página a mostrar inicialmente
-    let itemsPerPage = req.query.limit ? parseInt(req.query.limit, 10) : 5;     // Número de publicaciones que queremos mostrar por página
+    // Obtener el ID del usuario
+    const userId = req.params.id;
+
+    // Asignar el número de página a mostrar inicialmente
+    let page = req.params.page ? parseInt(req.params.page, 10) : 1;
+
+    // Número de publicaciones de contenido que queremos mostrar por página
+    let itemsPerPage = req.query.limit ? parseInt(req.query.limit, 10) : 5;
 
     // Opciones de la consulta
     const options = {
@@ -137,45 +145,47 @@ export const contentsUser = async (req, res) => {
       lean: true
     };
 
-    const contents = await Content.paginate({ user: userId }, options); // Buscar las publicaciones del usuario
+    // Buscar las publicaciones de contenido del usuario
+    const contents = await Content.paginate({ user: userId }, options);
 
-    // Verificar si existen publicaciones
-    if (!contents.docs || contents.docs.length <= 0) {
+    // Verificar si existen publicaciones de contenido
+    if(!contents.docs || contents.docs.length <= 0){
       return res.status(404).send({
         status: "error",
-        message: "No hay pulicaciones para mostrar"
+        message: "No hay contenido para mostrar"
       });
     }
 
     // Devolver respuesta exitosa
     return res.status(200).json({
       status: "success",
-      message: "PContenido del usuario: ",
-      publications: contents.docs,
+      message: "Contenido del usuario: ",
+      contents: contents.docs,
       total: contents.totalDocs,
       pages: contents.totalPages,
       page: contents.page,
       limit_items_ppage: contents.limit
     });
 
-
-    //Error
   } catch (error) {
-    console.log(`Error al mostrar las publicaciones: ${error}`);
+    console.log(`Error al mostrar el contenido: ${ error }`);
     return res.status(500).send({
       status: "error",
-      message: "Error al mostrar las publicaciones"
+      message: "Error al mostrar el contenido"
     });
   }
 };
 
-// Método para subir imágenes a las publicaciones
+// Método para subir imágenes a las publicaciones de contenido
 export const uploadMedia = async (req, res) => {
   try {
-    const contentId = req.params.id; // Obtener el ID de la publicación
-    const contentExists = await Content.findById(contentId); // Verificar si la publicación existe en la BD
+    // Obtener el ID de la publicación
+    const contentId = req.params.id;
 
-    if (!contentExists) {
+    // Verificar si la publicación existe en la BD
+    const contentExists = await Content.findById(contentId);
+
+    if(!contentExists){
       return res.status(404).send({
         status: "error",
         message: "No existe la publicación"
@@ -183,23 +193,24 @@ export const uploadMedia = async (req, res) => {
     }
 
     // Verificar si se ha recibido en la petición un archivo
-    if (!req.file) {
+    if(!req.file){
       return res.status(400).send({
         status: "error",
         message: "La petición no incluye la imagen"
       });
     }
 
-    const mediaUrl = req.file.path; // Obtener la URL de Cloudinary
+    // Obtener la URL de Cloudinary
+    const mediaUrl = req.file.path;
 
     // Actualizar la publicación con la URL de la imagen
     const contentUpdated = await Content.findByIdAndUpdate(
       contentId,
       { file: mediaUrl },
-      { new: true }
+      { new: true}
     );
 
-    if (!contentUpdated) {
+    if(!contentUpdated){
       return res.status(500).send({
         status: "error",
         message: "Error en la subida de la imagen"
@@ -210,15 +221,15 @@ export const uploadMedia = async (req, res) => {
     return res.status(200).json({
       status: "success",
       message: "Archivo subido con éxito",
-      content: contentUpdated,
+      contents: contentUpdated,
       file: mediaUrl
     });
 
   } catch (error) {
-    console.log(`Error al mostrar las publicaciones: ${error}`);
+    console.log(`Error al mostrar el contenido: ${ error }`);
     return res.status(500).send({
       status: "error",
-      message: "Error al mostrar las publicaciones"
+      message: "Error al mostrar el contenido"
     });
   }
 };
@@ -226,9 +237,11 @@ export const uploadMedia = async (req, res) => {
 // Método para mostrar el archivo subido a la publicación
 export const showMedia = async (req, res) => {
   try {
+    // Obtener el id de la publicación
+    const contentId = req.params.id;
 
-    const contentId = req.params.id;  // Obtener el id de la publicación
-    const content = await Content.findById(contentId).select('file'); // Buscar la publicación en la base de datos
+    // Buscar la publicación de contenido en la base de datos
+    const content = await Content.findById(contentId).select('file');
 
     // Verificar si la publicación existe y tiene un archivo
     if (!content || !content.file) {
@@ -237,10 +250,10 @@ export const showMedia = async (req, res) => {
         message: "No existe el archivo para esta publicación"
       });
     }
+
     // Redirigir a la URL de la imagen en Cloudinary
     return res.redirect(content.file);
 
-    //Error
   } catch (error) {
     console.error("Error al mostrar el archivo de la publicación", error);
     return res.status(500).send({
@@ -248,33 +261,36 @@ export const showMedia = async (req, res) => {
       message: "Error al mostrar archivo en la publicación"
     });
   }
-};
+}
 
 // Método para listar todas las publicaciones de los usuarios que yo sigo (Feed)
 export const feed = async (req, res) => {
   try {
+    // Asignar el número de página
+    let page = req.params.page ? parseInt(req.params.page, 10) : 1;
 
-    let page = req.params.page ? parseInt(req.params.page, 10) : 1; // Asignar el número de página
-    let itemsPerPage = req.query.limit ? parseInt(req.query.limit, 10) : 5; // Número de publicaciones que queremos mostrar por página
+    // Número de publicaciones que queremos mostrar por página
+    let itemsPerPage = req.query.limit ? parseInt(req.query.limit, 10) : 5;
 
-    // Verificar que el usuario autenticado existe 
-    if (!req.user || !req.user.userId) {
+    // Verificar que el usuario autenticado existe y tiene un userId
+    if(!req.user || !req.user.userId) {
       return res.status(404).send({
         status: "error",
         message: "Usuario no autenticado"
       });
-    };
+    }
 
-    const myFollows = await followUserIds(req);   // Obtener un array de IDs de los usuarios que sigue el usuario autenticado
+    // Obtener un array de IDs de los usuarios que sigue el usuario autenticado
+    const mycontacts = await followUserIds(req);
 
     // Verificar que la lista de usuarios que sigo no esté vacía
-    if (!myFollows.contacting || myFollows.contacting.length === 0) {
+    if (!mycontacts.contacting || mycontacts.contacting.length === 0){
       return res.status(404).send({
         status: "error",
         message: "No sigues a ningún usuario, no hay publicaciones que mostrar"
       });
-    };
-  
+    }
+
     // Configurar las options de la consulta
     const options = {
       page: page,
@@ -289,10 +305,10 @@ export const feed = async (req, res) => {
 
     // Consulta a la base de datos con paginate
     const result = await Content.paginate(
-      { user: { $in: myFollows.contacting } },
+      { user: { $in: mycontacts.contacting }},
       options
-    ); console.log(result);
-    
+    );
+
     // Verificar si se encontraron publicaciones en la BD
     if (!result.docs || result.docs.length <= 0) {
       return res.status(404).send({
@@ -300,23 +316,22 @@ export const feed = async (req, res) => {
         message: "No hay publicaciones para mostrar"
       });
     }
+
     // Devolver respuesta exitosa
     return res.status(200).json({
       status: "success",
       message: "Feed de Publicaciones",
-      publications: result.docs,
+      contents: result.docs,
       total: result.totalDocs,
       pages: result.totalPages,
       page: result.page,
       limit: result.limit
     });
 
-    //Error
   } catch (error) {
     return res.status(500).send({
       status: "error",
       message: "Error al mostrar las publicaciones en el feed"
     });
   }
-};
-
+}
